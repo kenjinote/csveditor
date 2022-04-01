@@ -1,107 +1,126 @@
 ﻿#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#pragma comment(lib, "Comctl32")
 
 #include <windows.h>
+#include <commctrl.h>
+#include "resource.h"
 
-#define DEFAULT_DPI 96
-#define SCALEX(X) MulDiv(X, uDpiX, DEFAULT_DPI)
-#define SCALEY(Y) MulDiv(Y, uDpiY, DEFAULT_DPI)
-#define POINT2PIXEL(PT) MulDiv(PT, uDpiY, 72)
-
-TCHAR szClassName[] = TEXT("Window");
-
-BOOL GetScaling(HWND hWnd, UINT* pnX, UINT* pnY)
-{
-	BOOL bSetScaling = FALSE;
-	const HMONITOR hMonitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
-	if (hMonitor)
-	{
-		HMODULE hShcore = LoadLibrary(TEXT("SHCORE"));
-		if (hShcore)
-		{
-			typedef HRESULT __stdcall GetDpiForMonitor(HMONITOR, int, UINT*, UINT*);
-			GetDpiForMonitor* fnGetDpiForMonitor = reinterpret_cast<GetDpiForMonitor*>(GetProcAddress(hShcore, "GetDpiForMonitor"));
-			if (fnGetDpiForMonitor)
-			{
-				UINT uDpiX, uDpiY;
-				if (SUCCEEDED(fnGetDpiForMonitor(hMonitor, 0, &uDpiX, &uDpiY)) && uDpiX > 0 && uDpiY > 0)
-				{
-					*pnX = uDpiX;
-					*pnY = uDpiY;
-					bSetScaling = TRUE;
-				}
-			}
-			FreeLibrary(hShcore);
-		}
-	}
-	if (!bSetScaling)
-	{
-		HDC hdc = GetDC(NULL);
-		if (hdc)
-		{
-			*pnX = GetDeviceCaps(hdc, LOGPIXELSX);
-			*pnY = GetDeviceCaps(hdc, LOGPIXELSY);
-			ReleaseDC(NULL, hdc);
-			bSetScaling = TRUE;
-		}
-	}
-	if (!bSetScaling)
-	{
-		*pnX = DEFAULT_DPI;
-		*pnY = DEFAULT_DPI;
-		bSetScaling = TRUE;
-	}
-	return bSetScaling;
-}
+WCHAR szClassName[] = L"csveditor";
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	static HWND hButton;
 	static HWND hEdit;
-	static HFONT hFont;
-	static UINT uDpiX = DEFAULT_DPI, uDpiY = DEFAULT_DPI;
+	static ULONGLONG xPos, xPosMax;
+	static ULONGLONG yPos, yPosMax;
+	static HPEN hPen;
 	switch (msg)
 	{
 	case WM_CREATE:
-		hButton = CreateWindow(TEXT("BUTTON"), TEXT("変換"), WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)IDOK, ((LPCREATESTRUCT)lParam)->hInstance, 0);
-		hEdit = CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("EDIT"), 0, WS_VISIBLE | WS_CHILD | ES_MULTILINE | ES_AUTOHSCROLL | ES_AUTOVSCROLL, 0, 0, 0, 0, hWnd, 0, ((LPCREATESTRUCT)lParam)->hInstance, 0);
-		SendMessage(hWnd, WM_DPICHANGED, 0, 0);
+		InitCommonControls();
+		hPen = CreatePen(PS_SOLID, 1, RGB(192, 192, 192));
 		break;
-	case WM_SIZE:
-		MoveWindow(hButton, POINT2PIXEL(10), POINT2PIXEL(10), POINT2PIXEL(256), POINT2PIXEL(32), TRUE);
-		MoveWindow(hEdit, POINT2PIXEL(10), POINT2PIXEL(50), LOWORD(lParam) - POINT2PIXEL(20), HIWORD(lParam) - POINT2PIXEL(60), TRUE);
-		break;
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDOK)
+	case WM_PAINT:
 		{
-			SetWindowText(hEdit, 0);
-			TCHAR szText[1024];
-			wsprintf(szText, TEXT("%d"), GetTickCount());
-			SendMessage(hEdit, EM_REPLACESEL, 0, (LPARAM)szText);
-		}
-		break;
-	case WM_NCCREATE:
-		{
-			const HMODULE hModUser32 = GetModuleHandle(TEXT("user32.dll"));
-			if (hModUser32)
+			PAINTSTRUCT ps;
+			HDC hdc = BeginPaint(hWnd, &ps);
+
+			RECT rect;
+			GetClientRect(hWnd, &rect);
+
+			HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+
+			for (int x = 0; x * 128 < rect.right; x++)
 			{
-				typedef BOOL(WINAPI*fnTypeEnableNCScaling)(HWND);
-				const fnTypeEnableNCScaling fnEnableNCScaling = (fnTypeEnableNCScaling)GetProcAddress(hModUser32, "EnableNonClientDpiScaling");
-				if (fnEnableNCScaling)
-				{
-					fnEnableNCScaling(hWnd);
+				MoveToEx(hdc, x * 128, 0, 0);
+				LineTo(hdc, x * 128, rect.bottom);
+			}
+
+			for (int y = 0; y * 32 < rect.bottom; y++)
+			{
+				MoveToEx(hdc, 0, y * 32, 0);
+				LineTo(hdc, rect.right, y * 32);
+			}
+
+			SelectObject(hdc, hOldPen);
+
+			WCHAR szText[1024];
+			for (int y = 0; y * 32 < rect.bottom; y++) {
+				for (int x = 0; x * 128 < rect.right; x++) {
+					wsprintf(szText, L"(%d, %d)", x, y);
+					TextOut(hdc, x * 128 + 1, y * 32 + 1, szText, lstrlen(szText));
 				}
 			}
+
+			EndPaint(hWnd, &ps);
 		}
-		return DefWindowProc(hWnd, msg, wParam, lParam);
-	case WM_DPICHANGED:
-		GetScaling(hWnd, &uDpiX, &uDpiY);
-		DeleteObject(hFont);
-		hFont = CreateFontW(-POINT2PIXEL(10), 0, 0, 0, FW_NORMAL, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, 0, 0, L"MS Shell Dlg");
-		SendMessage(hButton, WM_SETFONT, (WPARAM)hFont, 0);
-		SendMessage(hEdit, WM_SETFONT, (WPARAM)hFont, 0);
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case ID_ALL:
+			MessageBox(hWnd, L"すべて選択", 0, 0);
+			break;
+		case ID_CUT:
+			MessageBox(hWnd, L"カット", 0, 0);
+			break;
+		case ID_COPY:
+			MessageBox(hWnd, L"コピー", 0, 0);
+			break;
+		case ID_PASTE:
+			MessageBox(hWnd, L"ペースト", 0, 0);
+			break;
+		case ID_DEL:
+			MessageBox(hWnd, L"削除", 0, 0);
+			break;
+		case ID_UNDO:
+			MessageBox(hWnd, L"元に戻す", 0, 0);
+			break;
+		case ID_REDO:
+			MessageBox(hWnd, L"やり直し", 0, 0);
+			break;
+		case ID_FIND:
+			MessageBox(hWnd, L"検索", 0, 0);
+			break;
+		case ID_REPLACE:
+			MessageBox(hWnd, L"置換", 0, 0);
+			break;
+		case ID_NEXT:
+			MessageBox(hWnd, L"次を検索", 0, 0);
+			break;
+		case ID_PREV:
+			MessageBox(hWnd, L"前を検索", 0, 0);
+			break;
+		case ID_EDIT:
+			MessageBox(hWnd, L"値を編集", 0, 0);
+			break;
+		case ID_NEW:
+			MessageBox(hWnd, L"新規作成", 0, 0);
+			break;
+		case ID_OPEN:
+			MessageBox(hWnd, L"開く", 0, 0);
+			break;
+		case ID_SAVE:
+			MessageBox(hWnd, L"上書き保存", 0, 0);
+			break;
+		case ID_SAVEAS:
+			MessageBox(hWnd, L"名前を付けて保存", 0, 0);
+			break;
+		case ID_EXIT:
+			MessageBox(hWnd, L"終了", 0, 0);
+			break;
+		case ID_HEADER:
+			MessageBox(hWnd, L"ヘッダー", 0, 0);
+			break;
+		case ID_LINE:
+			MessageBox(hWnd, L"目盛り線", 0, 0);
+			break;
+		case ID_HELP:
+			MessageBox(hWnd, L"ヘルプ", 0, 0);
+			break;
+		}
 		break;
 	case WM_DESTROY:
-		DeleteObject(hFont);
+		DeleteObject(hPen);
 		PostQuitMessage(0);
 		break;
 	default:
@@ -110,7 +129,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPWSTR pCmdLine, int nCmdShow)
 {
 	MSG msg;
 	WNDCLASS wndclass = {
@@ -119,17 +138,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		0,
 		0,
 		hInstance,
-		0,
+		LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1)),
 		LoadCursor(0,IDC_ARROW),
 		(HBRUSH)(COLOR_WINDOW + 1),
-		0,
+		MAKEINTRESOURCE(IDR_MENU1),
 		szClassName
 	};
 	RegisterClass(&wndclass);
-	HWND hWnd = CreateWindow(
+	HWND hWnd = CreateWindowW(
 		szClassName,
-		TEXT("Window"),
-		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
+		L"csveditor",
+		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_HSCROLL | WS_VSCROLL,
 		CW_USEDEFAULT,
 		0,
 		CW_USEDEFAULT,
@@ -141,10 +160,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	);
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 	UpdateWindow(hWnd);
+	HACCEL hAccel = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
 	while (GetMessage(&msg, 0, 0, 0))
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		if (!TranslateAccelerator(hWnd, hAccel, &msg))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 	}
 	return (int)msg.wParam;
 }

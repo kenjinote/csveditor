@@ -1,0 +1,143 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 日本語 (日本) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
+#pragma code_page(932)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON                    "icon.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU
+BEGIN
+    POPUP "ファイル(&F)"
+    BEGIN
+        MENUITEM "新規作成(&N)\tCtrl+N",            ID_NEW
+        MENUITEM "開く(&O)\tCtrl+O",              ID_OPEN
+        MENUITEM "上書き保存(&S)\tCtrl+S",           ID_SAVE
+        MENUITEM "名前を付けて保存(&A)\tCtrl+Shift+S",  ID_SAVEAS
+        MENUITEM SEPARATOR
+        MENUITEM "終了(&X)\tAlt+F4",              ID_EXIT
+    END
+    POPUP "編集(&E)"
+    BEGIN
+        MENUITEM "元に戻す(&U)\tCtrl+Z",            ID_UNDO
+        MENUITEM "やり直し(&R)\tCtrl+Y",            ID_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "切り取り(&T)\tCtrl+X",            ID_CUT
+        MENUITEM "コピー(&C)\tCtrl+C",             ID_COPY
+        MENUITEM "貼り付け(&P)\tCtrl+P",            ID_PASTE
+        MENUITEM "削除(&D)\tDel",                 ID_DEL
+        MENUITEM SEPARATOR
+        MENUITEM "検索(&F)\tCtrl+F",              ID_FIND
+        MENUITEM "次を検索(&N)\tF3",                ID_NEXT
+        MENUITEM "前を検索(&B)\tShift+F3",          ID_PREV
+        MENUITEM "置換(&H)\tCtrl+H",              ID_REPLACE
+    END
+    POPUP "表示(&V)"
+    BEGIN
+        MENUITEM "見出し(&H)",                     ID_HEADER
+        MENUITEM "目盛線(&L)",                     ID_LINE
+    END
+    POPUP "ヘルプ(&H)"
+    BEGIN
+        MENUITEM "ヘルプ(&H)\tF1",                 ID_HELP
+        MENUITEM SEPARATOR
+        MENUITEM "バージョン情報(&A)",                 ID_VERSION
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_ACCELERATOR1 ACCELERATORS
+BEGIN
+    VK_DELETE,      ID_DEL,                 VIRTKEY, NOINVERT
+    "A",            ID_ALL,                 VIRTKEY, CONTROL, NOINVERT
+    "X",            ID_CUT,                 VIRTKEY, CONTROL, NOINVERT
+    "C",            ID_COPY,                VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_PASTE,               VIRTKEY, CONTROL, NOINVERT
+    "Z",            ID_UNDO,                VIRTKEY, CONTROL, NOINVERT
+    "Y",            ID_REDO,                VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_FIND,                VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_REPLACE,             VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_NEXT,                VIRTKEY, NOINVERT
+    VK_F3,          ID_PREV,                VIRTKEY, SHIFT, NOINVERT
+    VK_F2,          ID_EDIT,                VIRTKEY, NOINVERT
+    VK_F1,          ID_HELP,                VIRTKEY, NOINVERT
+    "O",            ID_OPEN,                VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_SAVE,                VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_SAVEAS,              VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "N",            ID_NEW,                 VIRTKEY, CONTROL, NOINVERT
+END
+
+#endif    // 日本語 (日本) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
